@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  mongo-replicaset-init:
+    build:
+      context: mongo
+    image: mongo:4.4.16-replicaset-init
+    container_name: mongo-replicaset-init
+    restart: on-failure
+    depends_on:
+      - mongo-one
+      - mongo-two
+      - mongo-three
+    networks:
+      - bridge_network
+    command:
+      [
+        "mongo-one",
+        "mongo-two",
+        "mongo-three",
+        "mongoReplicaSet"
+      ]
+
+  mongo-one:
+    image: mongo:4.4.16
+    container_name: mongo-one
+    restart: on-failure
+    ports:
+      - 27017:27017
+    networks:
+      - bridge_network
+    command: --replSet mongoReplicaSet --bind_ip_all
+    volumes:
+      - mongo-one-data:/data/db
+
+  mongo-two:
+    image: mongo:4.4.16
+    container_name: mongo-two
+    restart: on-failure
+    ports:
+      - 27018:27017
+    networks:
+      - bridge_network
+    command: --replSet mongoReplicaSet --bind_ip_all
+    volumes:
+      - mongo-two-data:/data/db
+
+  mongo-three:
+    image: mongo:4.4.16
+    container_name: mongo-three
+    restart: on-failure
+    ports:
+      - 27019:27017
+    networks:
+      - bridge_network
+    command: --replSet mongoReplicaSet --bind_ip_all
+    volumes:
+      - mongo-three-data:/data/db
+
+volumes:
+  mongo-one-data:
+    name: mongo-one-data
+  mongo-two-data:
+    name: mongo-two-data
+  mongo-three-data:
+    name: mongo-three-data
+
+networks:
+  bridge_network:
+    name: bridge_network
+    # external: true
